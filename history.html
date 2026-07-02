@@ -251,7 +251,39 @@
           <div class="empty-tx">Không có giao dịch nào đang xử lý</div>
         </div>
 
-        <h3 class="sec-title">Giao dịch thành công</h3>
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 16px 4px 10px 4px;
+          "
+        >
+          <h3
+            style="font-size: 14px; font-weight: 700; color: #2d3748; margin: 0"
+          >
+            Giao dịch thành công
+          </h3>
+          <button
+            id="btnDownloadCSV"
+            style="
+              background-color: #000000;
+              color: white;
+              border: none;
+              padding: 4px 10px;
+              font-size: 11px;
+              font-weight: 600;
+              border-radius: 6px;
+              cursor: pointer;
+              display: flex;
+              align-items: center;
+              gap: 4px;
+              transition: background 0.2s;
+            "
+          >
+            📥 Tải giao dịch
+          </button>
+        </div>
         <div class="tx-box" id="txSuccessBox">
           <div class="empty-tx">Không có giao dịch thành công nào</div>
         </div>
@@ -369,6 +401,46 @@
         });
 
       document.addEventListener("DOMContentLoaded", loadHistoryData);
+
+      // Xử lý sự kiện Download Giao dịch thành công
+      document
+        .getElementById("btnDownloadCSV")
+        .addEventListener("click", async () => {
+          try {
+            // Gọi API bằng cơ chế credentials: "include" để mang theo session_cookie
+            const response = await fetch(
+              `${API_BASE_URL}/api/download-success-transactions`,
+              {
+                method: "GET",
+                credentials: "include",
+                headers: { "ngrok-skip-browser-warning": "69420" },
+              },
+            );
+
+            if (!response.ok) {
+              alert("Không thể tải file, vui lòng thử lại!");
+              return;
+            }
+
+            // Chuyển kết quả trả về thành dạng Blob dữ liệu để kích hoạt tải xuống trình duyệt
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+
+            // Đặt tên file mặc định
+            a.download = `giao_dich_da_xu_ly_${new Date().toISOString().slice(0, 10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+
+            // Dọn dẹp bộ nhớ vùng chứa tạm
+            document.body.removeChild(a);
+            window.URL.revokeObjectURL(url);
+          } catch (error) {
+            console.error("Lỗi download:", error);
+            alert("Có lỗi hệ thống xảy ra khi tải file!");
+          }
+        });
     </script>
   </body>
 </html>
